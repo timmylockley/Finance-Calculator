@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Finance Calculator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f7fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background: #4a90e2;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        margin-top: 0;
+        color: #4a90e2;
+    }
+
+    label {
+        font-weight: bold;
+        margin-top: 10px;
+        display: block;
+    }
+
+    input, select, button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    button {
+        background: #4a90e2;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #357ABD;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background: #f0f0f0;
+    }
+
+    .progress-container {
+        background: #e0e0e0;
+        border-radius: 20px;
+        overflow: hidden;
+        height: 20px;
+        margin-top: 5px;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: #4a90e2;
+        width: 0%;
+        transition: width 0.4s ease-in-out;
+    }
+</style>
+</head>
+<body>
+
+<header>Ultimate Finance Goal Calculator</header>
+
+<div class="container">
+    <h2>Your Job & Income</h2>
+    <label for="job">Job Title</label>
+    <input type="text" id="job" placeholder="e.g. Software Developer">
+
+    <label for="salary">Monthly Salary ($)</label>
+    <input type="number" id="salary" placeholder="e.g. 4000">
+
+    <label for="expenses">Monthly Expenses ($)</label>
+    <input type="number" id="expenses" placeholder="e.g. 2000">
+
+    <label for="savingsRate">Savings Percentage (%)</label>
+    <input type="number" id="savingsRate" placeholder="e.g. 20">
+
+    <label for="growthRate">Annual Investment Growth Rate (%)</label>
+    <input type="number" id="growthRate" placeholder="e.g. 5">
+
+    <h2>Financial Goals</h2>
+    <div id="goalList"></div>
+
+    <label for="goalName">Goal Name</label>
+    <input type="text" id="goalName" placeholder="e.g. Buy a Car">
+
+    <label for="goalPrice">Goal Price ($)</label>
+    <input type="number" id="goalPrice" placeholder="e.g. 15000">
+
+    <label for="goalAllocation">% of Savings for This Goal</label>
+    <input type="number" id="goalAllocation" placeholder="e.g. 50">
+
+    <button onclick="addGoal()">Add Goal</button>
+
+    <button onclick="calculateFinance()">Calculate Plan</button>
+
+    <div id="results"></div>
+</div>
+
+<script>
+    let goals = [];
+
+    function addGoal() {
+        let name = document.getElementById("goalName").value.trim();
+        let price = parseFloat(document.getElementById("goalPrice").value);
+        let allocation = parseFloat(document.getElementById("goalAllocation").value);
+
+        if (!name || isNaN(price) || price <= 0 || isNaN(allocation) || allocation <= 0) {
+            alert("Please enter valid goal name, price, and allocation.");
+            return;
+        }
+
+        goals.push({ name, price, saved: 0, allocation });
+        document.getElementById("goalName").value = "";
+        document.getElementById("goalPrice").value = "";
+        document.getElementById("goalAllocation").value = "";
+
+        displayGoals();
+    }
+
+    function displayGoals() {
+        let goalListDiv = document.getElementById("goalList");
+        goalListDiv.innerHTML = "";
+
+        if (goals.length === 0) {
+            goalListDiv.innerHTML = "<p>No goals added yet.</p>";
+            return;
+        }
+
+        let table = "<table><tr><th>Goal</th><th>Price ($)</th><th>Allocation %</th><th>Progress</th><th>Remove</th></tr>";
+        goals.forEach((g, index) => {
+            let progressPercent = ((g.saved / g.price) * 100).toFixed(2);
+            table += `
+                <tr>
+                    <td>${g.name}</td>
+                    <td>${g.price.toLocaleString()}</td>
+                    <td>${g.allocation}%</td>
+                    <td>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width:${progressPercent}%;"></div>
+                        </div>
+                        ${progressPercent}%
+                    </td>
+                    <td><button style="background:red" onclick="removeGoal(${index})">X</button></td>
+                </tr>`;
+        });
+        table += "</table>";
+        goalListDiv.innerHTML = table;
+    }
+
+    function removeGoal(index) {
+        goals.splice(index, 1);
+        displayGoals();
+    }
+
+    function calculateFinance() {
+        let salary = parseFloat(document.getElementById("salary").value);
+        let expenses = parseFloat(document.getElementById("expenses").value);
+        let savingsRate = parseFloat(document.getElementById("savingsRate").value);
+        let growthRate = parseFloat(document.getElementById("growthRate").value) / 100;
+
+        if (isNaN(salary) || salary <= 0) {
+            alert("Please enter a valid monthly salary.");
+            return;
+        }
+        if (isNaN(expenses) || expenses < 0) {
+            alert("Please enter valid monthly expenses.");
+            return;
+        }
+        if (isNaN(savingsRate) || savingsRate <= 0 || savingsRate > 100) {
+            alert("Please enter a valid savings percentage.");
+            return;
+        }
+        if (goals.length === 0) {
+            alert("Please add at least one goal.");
+            return;
+        }
+
+        let totalAllocation = goals.reduce((sum, g) => sum + g.allocation, 0);
+        if (totalAllocation !== 100) {
+            alert("The total allocation % for all goals must equal 100.");
+            return;
+        }
+
+        let monthlySavings = (salary - expenses) * (savingsRate / 100);
+        if (monthlySavings <= 0) {
+            alert("Your expenses are too high compared to your salary.");
+            return;
+        }
+
+        // Reset savings progress
+        goals.forEach(g => g.saved = 0);
+
+        let month = 0;
+        let completedGoals = 0;
+        let log = [];
+
+        while (completedGoals < goals.length && month < 600) { // limit to 50 years
+            month++;
+
+            goals.forEach(goal => {
+                if (goal.saved < goal.price) {
+                    // Add allocation portion
+                    let monthlyContribution = monthlySavings * (goal.allocation / 100);
+                    goal.saved += monthlyContribution;
+
+                    // Apply monthly growth rate
+                    goal.saved *= (1 + growthRate / 12);
+
+                    // Cap savings at goal price
+                    if (goal.saved >= goal.price) {
+                        goal.saved = goal.price;
+                        completedGoals++;
+                    }
+                }
+            });
+
+            // Save log for month
+            log.push({
+                month,
+                data: goals.map(g => ({ name: g.name, saved: g.saved }))
+            });
+        }
+
+        // Display results
+        let resultsHTML = "<h2>Finance Plan Simulation</h2>";
+        resultsHTML += "<table><tr><th>Goal</th><th>Price ($)</th><th>Months Needed</th><th>Years Needed</th></tr>";
+        goals.forEach(goal => {
+            let monthsNeeded = log.find(l => l.data.every(d => d.name !== goal.name || d.saved >= goal.price))?.month || month;
+            let yearsNeeded = (monthsNeeded / 12).toFixed(1);
+            resultsHTML += `<tr>
+                <td>${goal.name}</td>
+                <td>${goal.price.toLocaleString()}</td>
+                <td>${monthsNeeded}</td>
+                <td>${yearsNeeded}</td>
+            </tr>`;
+        });
+        resultsHTML += "</table>";
+
+        document.getElementById("results").innerHTML = resultsHTML;
+        displayGoals();
+    }
+</script>
+
+</body>
+</html>
